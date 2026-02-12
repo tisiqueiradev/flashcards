@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { storage } from "../lib/storage";
+import { storage } from "@/lib/storage";
 import { Deck, DeckStats } from "../types/flashcards";
-import { DeckCard } from "../components/DeckCard";
-import { CreateDeckDialog } from "../components/CreateDeckDialog";
-import { InstallPWA } from "../components/InstallPWA";
-import { Button } from "../components/ui/button";
+import { DeckCard } from "@/components/DeckCard";
+import { CreateDeckDialog } from "@/components/CreateDeckDialog";
+import { InstallPWA } from "@/components/InstallPWA";
+import { Button } from "@/components/ui/button";
 import { Plus, Sparkles, Brain, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import Logo from "../components/ui/Logo";
+import Logo from "@/components/ui/Logo";
 import { v4 as uuidv4} from "uuid";
 
 export default function Home() {

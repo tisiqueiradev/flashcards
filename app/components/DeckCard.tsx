@@ -1,4 +1,4 @@
-import { Deck, DeckStats } from "../types/flashcards";
+import { Deck, DeckStats } from "@/types/flashcards";
 import { Card } from "../components/ui/card";
 import { BookOpen, Clock, Sparkles } from "lucide-react";
 

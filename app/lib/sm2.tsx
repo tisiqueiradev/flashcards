@@ -1,4 +1,4 @@
-import { Flashcard, ReviewQuality } from "../types/flashcards";
+import { Flashcard, ReviewQuality } from "@/types/flashcards";
 import { v4 as uuidv4} from "uuid";
 
 // SM-2 Algorithm Implementation

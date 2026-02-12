@@ -2,14 +2,14 @@
 
 import { use,useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/app/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, BookOpen, List} from 'lucide-react';
-import { storage } from '@/app/lib/storage';
-import { calculateNextReview, createNewCard } from "../../lib/sm2";
-import { Deck, Flashcard, ReviewQuality} from '@/app/types/flashcards';
-import { FlashcardViewer } from "../../components/FlashcardViewer";
-import { StudyComplete } from "../../components/StudyComplete";
-import { CreateCardDialog } from "../../components/CreateCardDialog";
+import { storage } from '@/lib/storage';
+import { calculateNextReview, createNewCard } from "@/lib/sm2";
+import { Deck, Flashcard, ReviewQuality} from '../../types/flashcards';
+import { FlashcardViewer } from "@/components/FlashcardViewer";
+import { StudyComplete } from "@/components/StudyComplete";
+import { CreateCardDialog } from "@/components/CreateCardDialog";
 
 
 

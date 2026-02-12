@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Flashcard, ReviewQuality } from "../types/flashcards";
+import { Flashcard, ReviewQuality } from "@/types/flashcards";
 import { Button } from "../components/ui/button";
-import { getQualityLabel } from "../lib/sm2";
+import { getQualityLabel } from "@/lib/sm2";
 import { RotateCcw, Check, X, Brain, Zap } from "lucide-react";
 
 interface FlashcardViewerProps {

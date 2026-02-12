@@ -1,4 +1,4 @@
-import { Deck, Flashcard } from "../types/flashcards";
+import { Deck, Flashcard } from "@/types/flashcards";
 
 const DECKS_KEY = "anki_decks";
 const CARDS_KEY = "anki_cards";
