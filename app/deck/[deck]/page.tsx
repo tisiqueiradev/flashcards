@@ -3,13 +3,16 @@
 import { use,useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus, BookOpen, List} from 'lucide-react';
+import { ArrowLeft, Plus, BookOpen, List, Trash2, SquarePen} from 'lucide-react';
 import { storage } from '@/lib/storage';
 import { calculateNextReview, createNewCard } from "@/lib/sm2";
 import { Deck, Flashcard, ReviewQuality} from '../../types/flashcards';
 import { FlashcardViewer } from "@/components/FlashcardViewer";
 import { StudyComplete } from "@/components/StudyComplete";
 import { CreateCardDialog } from "@/components/CreateCardDialog";
+import { DeleteCardDialog } from '@/components/DeleteCardDialog';
+import { EditCardDialog } from '@/components/EditCardDialog';
+
 
 
 
@@ -32,6 +35,9 @@ export default function DeckPage({ params }: PageProps) {
   const [cardsReviewed, setCardsReviewed] = useState(0);
   const [showCreateCard, setShowCreateCard] = useState(false);
   const [showCardList, setShowCardList] = useState(false);
+  const [showEditCard, setShowEditCard] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<Flashcard | null>(null);
+
 
 
   useEffect(() => {
@@ -77,6 +83,28 @@ export default function DeckPage({ params }: PageProps) {
     setCardsReviewed(0);
     setIsStudying(true);
   };
+
+  const handleDeleteCard = (cardId: string) => {
+  storage.deleteCard(cardId);
+  setCards((prev) => prev.filter((card) => card.id !== cardId));
+  setDueCards((prev) => prev.filter((card) => card.id !== cardId));
+};
+
+const handleEditCard = (updatedCard: Flashcard) => {
+  storage.saveCard(updatedCard);
+  setCards((prev) =>
+    prev.map((card) =>
+      card.id === updatedCard.id ? updatedCard : card
+    )
+  );
+  setDueCards((prev) =>
+    prev.map((card) =>
+      card.id === updatedCard.id ? updatedCard : card
+    )
+  );
+};
+
+
 
   if (!deck) {
     return (
@@ -156,6 +184,26 @@ export default function DeckPage({ params }: PageProps) {
                 >
                   <p className="font-medium mb-2">{card.front}</p>
                   <p className="text-sm text-muted-foreground">{card.back}</p>
+                  <div className='p-1 flex justify-start items-baseline gap-1 '>
+                    <DeleteCardDialog
+                      onConfirm={() => handleDeleteCard(card.id)}
+                    />
+
+                    <button className=
+                      "text-warning p-1 rounded-lg hover:text-warning/50 transition-colors"
+
+                      onClick={() => {
+                        setSelectedCard(card);
+                        setShowEditCard(true);
+                      }}
+                      >
+                      <SquarePen className="w-4 h-4 "/>
+
+                    </button>
+
+
+                  </div>
+
                 </div>
               ))
             )}
@@ -232,6 +280,14 @@ export default function DeckPage({ params }: PageProps) {
         onOpenChange={setShowCreateCard}
         onSave={handleCreateCard}
       />
+
+      <EditCardDialog
+        open={showEditCard}
+        onOpenChange={setShowEditCard}
+        card={selectedCard}
+        onSave={handleEditCard}
+      />
+
     </div>
   );
 }
