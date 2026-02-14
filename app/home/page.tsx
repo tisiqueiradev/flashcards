@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Plus, Sparkles, Brain, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import Logo from "@/components/ui/Logo";
-import { v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
+
   const router = useRouter();
   const { signOut } = useAuth();
 
@@ -21,16 +22,22 @@ export default function Home() {
   const [deckStatsMap, setDeckStatsMap] = useState<Record<string, DeckStats>>({});
   const [showCreateDeck, setShowCreateDeck] = useState(false);
 
-  // Função pura para calcular stats
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
+  const [showEditDeck, setShowEditDeck] = useState(false);
+
+
   const calculateDeckStats = (decks: Deck[]): Record<string, DeckStats> => {
     const now = Date.now();
     const map: Record<string, DeckStats> = {};
 
     decks.forEach((deck) => {
       const cards = storage.getCardsByDeck(deck.id);
+
       const dueCards = cards.filter((c) => c.nextReview <= now);
       const newCards = cards.filter((c) => c.lastReview === null);
-      const learnedCards = cards.filter((c) => c.lastReview !== null && c.nextReview > now);
+      const learnedCards = cards.filter(
+        (c) => c.lastReview !== null && c.nextReview > now
+      );
 
       map[deck.id] = {
         totalCards: cards.length,
@@ -43,26 +50,89 @@ export default function Home() {
     return map;
   };
 
-  // Carrega decks e stats de forma segura
+
+
   useEffect(() => {
     setTimeout(() => {
       const loadedDecks = storage.getDecks();
       setDecks(loadedDecks);
       setDeckStatsMap(calculateDeckStats(loadedDecks));
-    }, 0);
+    },0)
   }, []);
 
-  const handleCreateDeck = async (data: Omit<Deck, "id" | "createdAt" | "cardCount">) => {
+
+
+  const handleCreateDeck = (data: {
+    name: string;
+    description: string;
+    color: string;
+  }) => {
     const newDeck: Deck = {
-      ...data,
       id: uuidv4(),
+      name: data.name,
+      description: data.description,
+      color: data.color,
       createdAt: Date.now(),
       cardCount: 0,
     };
+
     storage.saveDeck(newDeck);
 
     setDecks((prev) => {
       const updated = [...prev, newDeck];
+      setDeckStatsMap(calculateDeckStats(updated));
+      return updated;
+    });
+  };
+
+  // -----------------------------
+  // Abrir modal de edição
+  // -----------------------------
+
+  const openEditDeck = (deck: Deck) => {
+    setSelectedDeck(deck);
+    setShowEditDeck(true);
+  };
+
+  // -----------------------------
+  // Atualizar deck
+  // -----------------------------
+
+  const handleUpdateDeck = (data: {
+    name: string;
+    description: string;
+    color: string;
+  }) => {
+    if (!selectedDeck) return;
+
+    const updatedDeck: Deck = {
+      ...selectedDeck,
+      name: data.name,
+      description: data.description,
+      color: data.color,
+    };
+
+    storage.saveDeck(updatedDeck);
+
+    setDecks((prev) =>
+      prev.map((deck) =>
+        deck.id === updatedDeck.id ? updatedDeck : deck
+      )
+    );
+
+    setShowEditDeck(false);
+    setSelectedDeck(null);
+  };
+
+  // -----------------------------
+  // Deletar deck
+  // -----------------------------
+
+  const handleDeleteDeck = (deckId: string) => {
+    storage.deleteDeck(deckId);
+
+    setDecks((prev) => {
+      const updated = prev.filter((deck) => deck.id !== deckId);
       setDeckStatsMap(calculateDeckStats(updated));
       return updated;
     });
@@ -73,44 +143,54 @@ export default function Home() {
     0
   );
 
+  // -----------------------------
+  // Render
+  // -----------------------------
+
   return (
-    <div className="min-h-screen bg-background ">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="p-4 border-b border-border flex items-center justify-between">
-        {/* Logo e textos */}
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl  flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center">
             <Logo />
           </div>
           <div>
             <h1 className="font-display text-xl font-bold">FlashCard</h1>
             <p className="text-xs text-muted-foreground">
-              Aprenda todos os dias. <span className="text-green-300">Evolua sempre.</span>
+              Aprenda todos os dias.{" "}
+              <span className="text-green-300">Evolua sempre.</span>
             </p>
           </div>
         </div>
 
-        {/* Indicador de cards e logout */}
         <div className="flex items-center gap-2">
           {totalDueCards > 0 && (
-            <div className="flex items-center gap- bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
+            <div className="flex items-center gap-2 bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               {totalDueCards} para revisar
             </div>
           )}
-          <Button  variant="ghost" size="icon" onClick={signOut}>
-            <LogOut className="w-4 h-4"/>
+
+          <Button variant="ghost" size="icon" onClick={signOut}>
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="  p-4 pb-24">
-        <div className="  flex items-center justify-between mb-4">
-          <h2 className="font-display font-semibold text-lg">Seus Decks</h2>
-          <Button size="sm" variant="default"onClick={() => setShowCreateDeck(true)}>
-            <Plus className="w-4 h-4 mr-1 " />
-            <span className="">Novo Deck</span>
+      {/* Main */}
+      <main className="p-4 pb-24">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-semibold text-lg">
+            Seus Decks
+          </h2>
+
+          <Button
+            size="sm"
+            onClick={() => setShowCreateDeck(true)}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Novo Deck
           </Button>
         </div>
 
@@ -119,15 +199,24 @@ export default function Home() {
             <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4">
               <Brain className="w-10 h-10 text-green-700" />
             </div>
+
             <h3 className="font-display text-lg font-semibold mb-2">
               Nenhum deck ainda
             </h3>
+
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
-              Crie seu primeiro deck de flashcards e comece a aprender com repetição espaçada!
+              Crie seu primeiro deck de flashcards!
             </p>
-            <Button onClick={() => setShowCreateDeck(true)} size="lg" className="bg-green-300">
-              <Plus className="w-5 h-5 mr-2  text-black" />
-              <span className="text-black">Criar Primeiro Deck</span>
+
+            <Button
+              onClick={() => setShowCreateDeck(true)}
+              size="lg"
+              className="bg-green-300"
+            >
+              <Plus className="w-5 h-5 mr-2 text-black" />
+              <span className="text-black">
+                Criar Primeiro Deck
+              </span>
             </Button>
           </div>
         ) : (
@@ -137,17 +226,36 @@ export default function Home() {
                 key={deck.id}
                 deck={deck}
                 stats={deckStatsMap[deck.id]}
-                onClick={() => router.push(`/deck/${deck.id}`)}
+                onClick={() =>
+                  router.push(`/deck/${deck.id}`)
+                }
+                onDelete={() =>
+                  handleDeleteDeck(deck.id)
+                }
+                onEdit={openEditDeck}
               />
             ))}
           </div>
         )}
       </main>
 
+      {/* Criar */}
       <CreateDeckDialog
         open={showCreateDeck}
         onOpenChange={setShowCreateDeck}
         onSave={handleCreateDeck}
+      />
+
+      {/* Editar */}
+      <CreateDeckDialog
+        key={selectedDeck?.id ?? "create"}
+        open={showEditDeck}
+        onOpenChange={(open) => {
+          setShowEditDeck(open);
+          if (!open) setSelectedDeck(null);
+        }}
+        initialData={selectedDeck}
+        onSave={handleUpdateDeck}
       />
 
       <InstallPWA />

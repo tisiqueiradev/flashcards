@@ -1,101 +1,109 @@
-
+"use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from "../components/ui/label";
-import { Deck } from "@/types/flashcards";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+interface Deck {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+}
+
+export type DeckFormData = {
+  name: string;
+  description: string;
+  color: string;
+};
+
 
 interface CreateDeckDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (deck: Omit<Deck, "id" | "createdAt" | "cardCount">) => void;
+  onSave: (data: DeckFormData) => void;
+  initialData?: Deck | null;
 }
 
 const COLORS = [
-  "#10b981", // primary green
-  "#3b82f6", // blue
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#8b5cf6", // purple
-  "#ec4899", // pink
-  "#06b6d4", // cyan
-  "#f97316", // orange
+  "#3B82F6",
+  "#EF4444",
+  "#10B981",
+  "#F59E0B",
+  "#8B5CF6",
 ];
 
 export function CreateDeckDialog({
   open,
   onOpenChange,
   onSave,
+  initialData,
 }: CreateDeckDialogProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [color, setColor] = useState(COLORS[0]);
+  const isEditing = !!initialData;
 
-  const handleSave = () => {
-    if (!name.trim()) return;
-    onSave({ name: name.trim(), description: description.trim(), color });
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [color, setColor] = useState(initialData?.color ?? COLORS[0]);
+
+  const resetForm = () => {
     setName("");
     setDescription("");
     setColor(COLORS[0]);
+  };
+
+  const handleSave = () => {
+    if (!name.trim()) return;
+
+    onSave({
+      name,
+      description,
+      color,
+    });
+
+    resetForm();
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="card-gradient border-border">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-display">Novo deck</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Deck" : "Criar Novo Deck"}
+          </DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <Input
-              id="name"
-              placeholder="Ex: Inglês - Vocabulário"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="bg-secondary border-border resize-none text-base"
-            />
+          <Input
+            placeholder="Nome do deck"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <Textarea
+            placeholder="Descrição (opcional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+
+          <div className="flex gap-2 flex-wrap">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className={`w-8 h-8 rounded-full border-2 ${
+                  color === c ? "border-black" : "border-transparent"
+                }`}
+                style={{ backgroundColor: c }}
+              />
+            ))}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição (opcional)</Label>
-            <Textarea
-              id="description"
-              placeholder="Uma breve descrição do deck..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-secondary border-border resize-none text-base"
-              rows={2}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Cor</Label>
-            <div className="flex gap-2 flex-wrap">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`w-8 h-8 rounded-full transition-all ${
-                    color === c
-                      ? "ring-2 ring-offset-2 ring-offset-background ring-primary scale-110"
-                      : "hover:scale-105"
-                  }`}
-                  style={{ backgroundColor: c }}
-                  onClick={() => setColor(c)}
-                />
-              ))}
-            </div>
-          </div>
-          <Button onClick={handleSave} className="w-full" disabled={!name.trim()}>
-            Criar Deck
+
+          <Button onClick={handleSave} className="w-full">
+            {isEditing ? "Salvar Alterações" : "Criar Deck"}
           </Button>
         </div>
       </DialogContent>

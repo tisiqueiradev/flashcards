@@ -76,6 +76,27 @@ export default function DeckPage({ params }: PageProps) {
     setDueCards((prev) => [...prev, newCard]);
   };
 
+  const handleDeleteCard = (cardId: string) => {
+    storage.deleteCard(cardId);
+    setCards((prev) => prev.filter((card) => card.id !== cardId));
+    setDueCards((prev) => prev.filter((card) => card.id !== cardId));
+  };
+
+  const handleEditCard = (updatedCard: Flashcard) => {
+    storage.saveCard(updatedCard);
+    setCards((prev) =>
+      prev.map((card) =>
+        card.id === updatedCard.id ? updatedCard : card
+      )
+    );
+    setDueCards((prev) =>
+      prev.map((card) =>
+        card.id === updatedCard.id ? updatedCard : card
+      )
+    );
+  };
+
+
   const startStudy = () => {
     const due = storage.getDueCards(deckId!);
     setDueCards(due);
@@ -84,25 +105,6 @@ export default function DeckPage({ params }: PageProps) {
     setIsStudying(true);
   };
 
-  const handleDeleteCard = (cardId: string) => {
-  storage.deleteCard(cardId);
-  setCards((prev) => prev.filter((card) => card.id !== cardId));
-  setDueCards((prev) => prev.filter((card) => card.id !== cardId));
-};
-
-const handleEditCard = (updatedCard: Flashcard) => {
-  storage.saveCard(updatedCard);
-  setCards((prev) =>
-    prev.map((card) =>
-      card.id === updatedCard.id ? updatedCard : card
-    )
-  );
-  setDueCards((prev) =>
-    prev.map((card) =>
-      card.id === updatedCard.id ? updatedCard : card
-    )
-  );
-};
 
 
 
